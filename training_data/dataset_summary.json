@@ -1,0 +1,17 @@
+{
+  "total_documents": 7,
+  "total_training_pairs": 105,
+  "document_types": {
+    "insurance_policy": 7
+  },
+  "total_characters": 1024094,
+  "files_processed": [
+    "Arogya Sanjeevani Policy - CIN - U10200WB1906GOI001713 1.pdf",
+    "BAJHLIP23020V012223.pdf",
+    "CHOTGDP23004V012223.pdf",
+    "EDLHLGA23009V012223.pdf",
+    "HDFHLIP23024V072223 (1).pdf",
+    "HDFHLIP23024V072223.pdf",
+    "ICIHLIP22012V012223 (1).pdf"
+  ]
+}

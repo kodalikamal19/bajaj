@@ -1,0 +1,80 @@
+{
+  "test_results": [
+    {
+      "question": "What is the premium amount?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.004888772964477539,
+      "answer_length": 313
+    },
+    {
+      "question": "What are the key benefits of this policy?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0031599998474121094,
+      "answer_length": 313
+    },
+    {
+      "question": "What are the exclusions in this policy?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0028066635131835938,
+      "answer_length": 313
+    },
+    {
+      "question": "What is the coverage amount?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0027556419372558594,
+      "answer_length": 313
+    },
+    {
+      "question": "How to file a claim?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0027561187744140625,
+      "answer_length": 313
+    },
+    {
+      "question": "What is the policy period?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0026595592498779297,
+      "answer_length": 313
+    },
+    {
+      "question": "Who is eligible for this policy?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0027685165405273438,
+      "answer_length": 313
+    },
+    {
+      "question": "What documents are required?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.002817392349243164,
+      "answer_length": 313
+    },
+    {
+      "question": "What is the waiting period?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.0026328563690185547,
+      "answer_length": 313
+    },
+    {
+      "question": "What are the renewal conditions?",
+      "answer": "Error processing question: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually pass the key with `genai.configure(api_key=my_api_key)`.\n    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.",
+      "response_time": 0.002714872360229492,
+      "answer_length": 313
+    }
+  ],
+  "performance_metrics": {
+    "avg_response_time": 0.0029960393905639647,
+    "avg_answer_length": 313.0,
+    "total_processing_time": 0.02996039390563965,
+    "total_questions": 10
+  },
+  "model_info": {
+    "model_name": "gemini-1.5-pro-latest",
+    "training_documents": 7,
+    "enhanced_features": [
+      "Document similarity matching",
+      "Enhanced prompt engineering",
+      "Post-processing optimization",
+      "Context-aware responses"
+    ]
+  }
+}
