@@ -9,19 +9,18 @@ import requests
 import pypdf
 import google.generativeai as genai
 from src.utils.memory_manager import MemoryManager, chunk_text, StreamingProcessor
+from src.training.enhanced_model import EnhancedQueryProcessor
 
-hackrx_bp = Blueprint("hackrx", __name__)
+hackrx_unified_bp = Blueprint("hackrx_unified", __name__)
 
 # Configure Gemini API
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-class PDFProcessor:
-    """Memory-efficient PDF processor"""
+class EnhancedPDFProcessor:
+    """Enhanced memory-efficient PDF processor with better text extraction"""
     
     def __init__(self):
         self.memory_manager = MemoryManager()
-
-
     
     @MemoryManager.cleanup_decorator
     def download_pdf(self, url: str) -> bytes:
@@ -29,7 +28,7 @@ class PDFProcessor:
         try:
             # Set headers to avoid being blocked
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
             
             response = requests.get(url, stream=True, timeout=60, headers=headers)
@@ -78,7 +77,7 @@ class PDFProcessor:
     
     @MemoryManager.cleanup_decorator
     def extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF bytes with memory optimization"""
+        """Enhanced text extraction from PDF bytes with better cleaning"""
         try:
             # Use BytesIO to avoid writing to disk
             pdf_stream = io.BytesIO(pdf_bytes)
@@ -97,7 +96,10 @@ class PDFProcessor:
                     page_text = page.extract_text()
                     
                     if page_text and page_text.strip():
-                        text_parts.append(page_text.strip())
+                        # Enhanced text cleaning
+                        cleaned_text = self._clean_extracted_text(page_text.strip())
+                        if cleaned_text:
+                            text_parts.append(cleaned_text)
                     
                     # Clear page from memory
                     del page
@@ -121,12 +123,15 @@ class PDFProcessor:
             if not text_parts:
                 raise Exception("No text could be extracted from the PDF")
             
-            # Join text parts efficiently
+            # Join text parts efficiently with better formatting
             full_text = "\n\n".join(text_parts)
             del text_parts
             
-            # Limit text length to prevent memory issues
-            max_text_length = 200000  # ~200KB of text
+            # Enhanced text post-processing
+            full_text = self._post_process_text(full_text)
+            
+            # Limit text length to prevent memory issues (increased for better accuracy)
+            max_text_length = 250000  # Increased from 200KB to 250KB
             if len(full_text) > max_text_length:
                 full_text = full_text[:max_text_length] + "\n\n[Document truncated due to length]"
             
@@ -134,101 +139,56 @@ class PDFProcessor:
             
         except Exception as e:
             raise Exception(f"Failed to extract text from PDF: {str(e)}")
-
-class QueryProcessor:
-    """Efficient query processing using Gemini"""   
     
-    def __init__(self):
-        self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
-        self.memory_manager = MemoryManager()
-        self.streaming_processor = StreamingProcessor(max_memory_mb=400)
-    
-    @MemoryManager.cleanup_decorator
-    def process_queries(self, document_text: str, questions: List[str]) -> List[str]:
-        """Process multiple queries efficiently"""
-        try:
-            # Optimize document text for processing
-            optimized_text = self._optimize_document_text(document_text)
-            
-            answers = []
-            
-            for i, question in enumerate(questions):
-                try:
-                    print(f"Processing question {i+1}/{len(questions)}")
-                    
-                    # Process with memory monitoring
-                    answer = self.streaming_processor.process_with_memory_check(
-                        lambda q: self._answer_single_query(optimized_text, q),
-                        question
-                    )
-                    answers.append(answer)
-                    
-                    # Force cleanup between questions
-                    gc.collect()
-                    
-                except Exception as e:
-                    print(f"Error processing question '{question}': {str(e)}")
-                    answers.append(f"Error processing this question: {str(e)}")
-            
-            return answers
-            
-        except Exception as e:
-            raise Exception(f"Failed to process queries: {str(e)}")
-    
-    def _optimize_document_text(self, document_text: str) -> str:
-        """Optimize document text for processing"""
+    def _clean_extracted_text(self, text: str) -> str:
+        """Clean extracted text from PDF"""
+        import re
+        
         # Remove excessive whitespace
-        lines = document_text.split('\n')
-        cleaned_lines = []
+        text = re.sub(r'\s+', ' ', text)
         
-        for line in lines:
-            line = line.strip()
-            if line and len(line) > 3:  # Skip very short lines
-                cleaned_lines.append(line)
+        # Remove common PDF artifacts - using raw string for regex
+        text = re.sub(r'[^\w\s.,:;!?-()[\]{}"\'/\\@#$%^&*+=<>~`|\\]', '', text)
         
-        optimized_text = '\n'.join(cleaned_lines)
+        # Fix common OCR errors
+        text = text.replace('|', 'I')  # Common OCR mistake
+        text = text.replace('0', 'O')  # In some contexts
         
-        # Limit text length for API efficiency
-        max_length = 80000  # Conservative limit for API
-        if len(optimized_text) > max_length:
-            # Try to cut at paragraph boundary
-            cut_point = optimized_text.rfind('\n\n', 0, max_length)
-            if cut_point > max_length // 2:
-                optimized_text = optimized_text[:cut_point] + "\n\n[Document truncated]"
-            else:
-                optimized_text = optimized_text[:max_length] + "\n\n[Document truncated]"
-        
-        return optimized_text
+        return text.strip()
     
-    def _answer_single_query(self, document_text: str, question: str) -> str:
-        """Answer a single query using Gemini"""
-        try:
-            # Create focused prompt
-            prompt = f"""Based on the following document, answer the question accurately and concisely.
+    def _post_process_text(self, text: str) -> str:
+        """Post-process extracted text for better readability"""
+        import re
+        
+        # Fix line breaks and spacing
+        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)  # Multiple line breaks to double
+        text = re.sub(r'([.!?])\s*\n\s*([A-Z])', r'\1\n\n\2', text)  # Sentence boundaries
+        
+        # Fix common formatting issues
+        text = re.sub(r'\s+([.,:;!?])', r'\1', text)  # Remove space before punctuation
+        text = re.sub(r'([.!?])\s*([a-z])', r'\1 \2', text)  # Add space after sentence end
+        
+        return text
 
-Document:
-{document_text}
+# Initialize enhanced processor with training data
+training_data_path = "/home/ubuntu/hackrx-main/training_data/raw_dataset.json"
+enhanced_processor = None
 
-Question: {question}
+try:
+    if os.path.exists(training_data_path):
+        enhanced_processor = EnhancedQueryProcessor(training_data_path)
+        print("✅ Enhanced processor initialized with training data")
+    else:
+        enhanced_processor = EnhancedQueryProcessor()
+        print("⚠️ Enhanced processor initialized without training data")
+except Exception as e:
+    print(f"⚠️ Error initializing enhanced processor: {str(e)}")
+    enhanced_processor = EnhancedQueryProcessor()
 
-Instructions:
-- Provide a direct, factual answer based only on the document
-- If information is not in the document, state "Information not available in the document"
-- Keep the answer concise but complete
-- Quote specific details when relevant"""
-
-            response = self.model.generate_content(prompt)
-            
-            answer = response.text.strip()
-            return answer
-            
-        except Exception as e:
-            raise Exception(f"Gemini API error: {str(e)}")
-
-@hackrx_bp.route('/v1/hackrx/run', methods=['POST'])
+@hackrx_unified_bp.route('/run', methods=['POST'])
 @cross_origin()
-def hackrx_run():
-    """Main HackRX API endpoint"""
+def hackrx_unified_run():
+    """Unified HackRX API endpoint with all improvements"""
     memory_manager = MemoryManager()
     
     try:
@@ -261,20 +221,20 @@ def hackrx_run():
         if not isinstance(questions, list) or len(questions) == 0:
             return jsonify({'error': 'questions must be a non-empty list'}), 400
         
-        if len(questions) > 20:  # Reduced limit for memory efficiency
-            return jsonify({'error': 'Maximum 20 questions allowed'}), 400
+        if len(questions) > 25:  # Increased limit for enhanced model
+            return jsonify({'error': 'Maximum 25 questions allowed'}), 400
         
         # Validate each question
         for i, question in enumerate(questions):
             if not isinstance(question, str) or not question.strip():
                 return jsonify({'error': f'Question {i+1} must be a non-empty string'}), 400
-            if len(question) > 1000:  # Limit question length
-                return jsonify({'error': f'Question {i+1} too long (max 1000 characters)'}), 400
+            if len(question) > 1500:  # Increased limit
+                return jsonify({'error': f'Question {i+1} too long (max 1500 characters)'}), 400
         
-        # Process PDF
+        # Process PDF with enhanced processor
         try:
-            print("Starting PDF processing...")
-            pdf_processor = PDFProcessor()
+            print("Starting enhanced PDF processing...")
+            pdf_processor = EnhancedPDFProcessor()
             pdf_bytes = pdf_processor.download_pdf(documents_url)
             
             # Check memory after download
@@ -292,17 +252,23 @@ def hackrx_run():
         except Exception as e:
             return jsonify({'error': f'PDF processing failed: {str(e)}'}), 400
         
-        # Process queries
+        # Process queries with enhanced model
         try:
-            print("Starting query processing...")
-            query_processor = QueryProcessor()
-            answers = query_processor.process_queries(document_text, questions)
+            print("Starting enhanced query processing...")
+            
+            if enhanced_processor:
+                answers = enhanced_processor.batch_process_queries(document_text, questions)
+            else:
+                # Fallback to basic processing
+                answers = []
+                for question in questions:
+                    answers.append("Enhanced processor not available")
             
             # Clear document text from memory
             del document_text
             gc.collect()
             
-            print("Query processing completed")
+            print("Enhanced query processing completed")
             
         except Exception as e:
             return jsonify({'error': f'Query processing failed: {str(e)}'}), 500
@@ -316,7 +282,17 @@ def hackrx_run():
         print(f"Final memory usage: {final_memory['rss_mb']:.2f}MB")
         
         response = {
-            'answers': answers
+            'answers': answers,
+            'model_info': {
+                'model_name': 'gemini-1.5-pro-latest',
+                'enhanced_features': [
+                    'Document similarity matching',
+                    'Enhanced prompt engineering',
+                    'Post-processing optimization',
+                    'Improved text extraction'
+                ],
+                'training_documents': len(enhanced_processor.training_data) if enhanced_processor else 0
+            }
         }
         
         return jsonify(response), 200
@@ -327,22 +303,30 @@ def hackrx_run():
         
     except Exception as e:
         # Log the error (in production, use proper logging)
-        print(f"Unexpected error in hackrx_run: {str(e)}")
+        print(f"Unexpected error in hackrx_unified_run: {str(e)}")
         memory_manager.force_garbage_collection()
         return jsonify({'error': 'Internal server error'}), 500
 
-@hackrx_bp.route('/health', methods=['GET'])
+@hackrx_unified_bp.route('/health', methods=['GET'])
 @cross_origin()
-def health_check():
-    """Health check endpoint"""
+def health_check_unified():
+    """Unified health check endpoint"""
     memory_manager = MemoryManager()
     memory_usage = memory_manager.get_memory_usage()
     
     return jsonify({
         'status': 'healthy',
-        'service': 'HackRX API',
-        'version': '1.0.0',
+        'service': 'HackRX Unified API',
+        'version': '3.0.0',
+        'model': 'gemini-1.5-pro-latest',
         'memory_usage_mb': round(memory_usage['rss_mb'], 2),
-        'memory_percent': round(memory_usage['percent'], 2)
+        'memory_percent': round(memory_usage['percent'], 2),
+        'enhanced_features': [
+            'Document similarity matching',
+            'Enhanced prompt engineering',
+            'Post-processing optimization',
+            'Improved text extraction',
+            'Training data integration'
+        ],
+        'training_documents': len(enhanced_processor.training_data) if enhanced_processor else 0
     }), 200
-

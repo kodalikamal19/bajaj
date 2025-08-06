@@ -1,15 +1,21 @@
 import os
 import sys
-# DON'T CHANGE THIS !!!
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# DON\'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from src.models.user import db
 from src.routes.user import user_bp
-from src.routes.hackrx import hackrx_bp
-from src.routes.hackrx_enhanced import hackrx_enhanced_bp
-from src.routes.hackrx_ultra import hackrx_ultra_bp
+# from src.routes.hackrx import hackrx_bp
+# from src.routes.hackrx_enhanced import hackrx_enhanced_bp
+# from src.routes.hackrx_ultra import hackrx_ultra_bp
+from src.routes.hackrx_unified import hackrx_unified_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -18,9 +24,10 @@ app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 CORS(app)
 
 app.register_blueprint(user_bp, url_prefix='/api')
-app.register_blueprint(hackrx_bp, url_prefix='/api')
-app.register_blueprint(hackrx_enhanced_bp, url_prefix='/api/enhanced')
-app.register_blueprint(hackrx_ultra_bp, url_prefix='/api/ultra')
+# app.register_blueprint(hackrx_bp, url_prefix='/api')
+# app.register_blueprint(hackrx_enhanced_bp, url_prefix='/api/enhanced')
+# app.register_blueprint(hackrx_ultra_bp, url_prefix='/api/ultra')
+app.register_blueprint(hackrx_unified_bp, url_prefix='/api/v1/hackrx')
 
 # uncomment if you need to use database
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"

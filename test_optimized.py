@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
-"""
-Test script for optimized HackRX API
-"""
 import requests
 import json
 import time
 
 def test_optimized_endpoint():
-    """Test the optimized ultra endpoint"""
-    url = 'http://localhost:5001/api/ultra/v1/hackrx/run'
+    """Test the optimized unified endpoint"""
+    url = 'http://localhost:5001/api/v1/hackrx/run'
     
     # Sample data for testing
     test_data = {

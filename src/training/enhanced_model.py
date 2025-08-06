@@ -1,6 +1,3 @@
-"""
-Enhanced model with training capabilities and improved accuracy
-"""
 import os
 import json
 import numpy as np
@@ -98,8 +95,24 @@ class EnhancedQueryProcessor:
     def generate_enhanced_prompt(self, document_text: str, question: str, similar_docs: List[Dict[str, Any]] = None) -> str:
         """Generate enhanced prompt with context from similar documents"""
         
-        # Optimized prompt for faster processing
-        prompt = f"""Based on the following document, answer the question accurately and concisely. \n        The answer should be very exact and summarized, similar to the example: 'Yes, knee surgery is covered under the policy.'\n\nDOCUMENT:\n{document_text[:50000]}\n\nQUESTION: {question}\n\nINSTRUCTIONS:\n- Provide a direct, factual answer based only on the document content\n- Keep answers extremely brief and to the point (1-2 sentences maximum)\n- If information is not in the document, respond "Information not available in the document."\n- Focus on specific facts, numbers, and key details\n- Do not include introductory or concluding phrases.\n\nANSWER:"""
+        # Optimized prompt for faster processing and complete sentences
+        prompt = f"""Based on the following document, answer the question accurately and concisely. 
+        The answer MUST be a complete, grammatically correct sentence or two, summarizing the information directly.
+        Example: 'Yes, knee surgery is covered under the policy.'
+
+DOCUMENT:
+{document_text[:50000]}
+
+QUESTION: {question}
+
+INSTRUCTIONS:
+- Provide a direct, factual answer based only on the document content
+- Keep answers brief (1-2 complete sentences maximum)
+- If information is not in the document, respond "Information not available in the document."
+- Focus on specific facts, numbers, and key details
+- Do not include introductory or concluding phrases.
+
+ANSWER:"""
         
         return prompt
     
@@ -114,14 +127,14 @@ class EnhancedQueryProcessor:
                 document_text, question, similar_docs
             )
             
-            # Generate response with optimized settings for speed
+            # Generate response with optimized settings for speed and completeness
             response = self.model.generate_content(
                 enhanced_prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.0,  # Deterministic for speed
                     top_p=0.9,
                     top_k=20,  # Reduced for faster generation
-                    max_output_tokens=20,  # Further reduced for brief answers
+                    max_output_tokens=75,  # Adjusted for complete sentences while aiming for speed
                 )
             )
             
