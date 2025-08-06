@@ -99,20 +99,7 @@ class EnhancedQueryProcessor:
         """Generate enhanced prompt with context from similar documents"""
         
         # Optimized prompt for faster processing
-        prompt = f"""Analyze this document and answer the question directly and concisely.
-
-DOCUMENT:
-{document_text[:50000]}
-
-QUESTION: {question}
-
-INSTRUCTIONS:
-- Provide a direct, factual answer based only on the document content
-- Keep answers brief (1-2 sentences maximum)
-- If information is not in the document, respond "Information not available"
-- Focus on specific facts, numbers, and key details
-
-ANSWER:"""
+        prompt = f"""Based on the following document, answer the question accurately and concisely. \n        The answer should be very exact and summarized, similar to the example: 'Yes, knee surgery is covered under the policy.'\n\nDOCUMENT:\n{document_text[:50000]}\n\nQUESTION: {question}\n\nINSTRUCTIONS:\n- Provide a direct, factual answer based only on the document content\n- Keep answers extremely brief and to the point (1-2 sentences maximum)\n- If information is not in the document, respond "Information not available in the document."\n- Focus on specific facts, numbers, and key details\n- Do not include introductory or concluding phrases.\n\nANSWER:"""
         
         return prompt
     
@@ -134,7 +121,7 @@ ANSWER:"""
                     temperature=0.0,  # Deterministic for speed
                     top_p=0.9,
                     top_k=20,  # Reduced for faster generation
-                    max_output_tokens=100,  # Reduced for brief answers
+                    max_output_tokens=20,  # Further reduced for brief answers
                 )
             )
             
@@ -290,4 +277,3 @@ ANSWER:"""
             'correct_answers': correct_answers,
             'total_questions': total_questions
         }
-

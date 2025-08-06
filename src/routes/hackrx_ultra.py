@@ -34,7 +34,7 @@ class UltraOptimizedPDFProcessor:
         """Ultra-optimized PDF download"""
         try:
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.5 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/pdf,application/octet-stream,*/*',
                 'Accept-Encoding': 'gzip, deflate',
                 'Connection': 'keep-alive'
@@ -226,8 +226,10 @@ def hackrx_ultra_run():
         # Enhanced input validation
         if not isinstance(documents_url, str) or not documents_url.strip():
             return jsonify({'error': 'documents must be a valid URL string'}), 400
+        
         if not isinstance(questions, list) or len(questions) == 0:
             return jsonify({'error': 'questions must be a non-empty list'}), 400
+        
         if len(questions) > 30:  # Increased limit for ultra version
             return jsonify({'error': 'Maximum 30 questions allowed'}), 400
         
@@ -272,6 +274,12 @@ def hackrx_ultra_run():
             else:
                 answers = ["Ultra processor not available" for _ in questions]
             
+            # Apply post-processing for exact and summarized answers
+            processed_answers = []
+            for i, answer in enumerate(answers):
+                processed_answers.append(ultra_processor.post_process_answer(answer, questions[i], document_text))
+            answers = processed_answers
+
             del document_text
             gc.collect()
             
@@ -341,4 +349,3 @@ def health_check_ultra():
 def get_performance_stats():
     """Get detailed performance statistics"""
     return jsonify(performance_optimizer.get_performance_stats()), 200
-

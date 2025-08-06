@@ -46,11 +46,18 @@ def test_optimized_endpoint():
                 print("✅ Response format is correct")
                 print(f"Number of answers: {len(result['answers'])}")
                 
-                # Print answers
+                all_answers_valid = True
+                # Print answers and check for error messages
                 for i, answer in enumerate(result['answers']):
                     print(f"Q{i+1}: {test_data['questions'][i]}")
                     print(f"A{i+1}: {answer}")
+                    if "Error processing question" in answer or "Information not available in the document." == answer:
+                        all_answers_valid = False
                     print()
+                
+                if not all_answers_valid:
+                    print("❌ Some answers contain error messages or indicate information is not available.")
+                    return False
                 
                 return True
             else:
@@ -83,4 +90,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
