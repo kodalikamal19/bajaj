@@ -14,8 +14,13 @@ class EnhancedQueryProcessor:
     
     def __init__(self, training_data_path: str = None):
         # Configure Gemini with latest model
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        self.model = None
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            print("⚠️ Warning: GOOGLE_API_KEY environment variable not set")
+        else:
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
         
         self.memory_manager = MemoryManager()
         self.training_data = []
@@ -119,6 +124,10 @@ ANSWER:"""
     def process_query_with_enhancement(self, document_text: str, question: str) -> str:
         """Process query with enhanced context and accuracy"""
         try:
+            # Check if model is available (API key was set)
+            if self.model is None:
+                return "API key not configured. Please set the GOOGLE_API_KEY environment variable."
+                
             # Skip similarity search for faster processing
             similar_docs = []
             
@@ -228,7 +237,7 @@ ANSWER:"""
     def save_model_components(self):
         """Save model components for faster loading"""
         try:
-            model_dir = "/home/ubuntu/hackrx-main/model_components"
+            model_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "model_components")
             os.makedirs(model_dir, exist_ok=True)
             
             # Save vectorizer

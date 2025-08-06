@@ -14,7 +14,11 @@ from src.training.enhanced_model import EnhancedQueryProcessor
 hackrx_unified_bp = Blueprint("hackrx_unified", __name__)
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+api_key = os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    print("⚠️ Warning: GOOGLE_API_KEY environment variable not set")
+else:
+    genai.configure(api_key=api_key)
 
 class EnhancedPDFProcessor:
     """Enhanced memory-efficient PDF processor with better text extraction"""
@@ -171,7 +175,7 @@ class EnhancedPDFProcessor:
         return text
 
 # Initialize enhanced processor with training data
-training_data_path = "/home/ubuntu/hackrx-main/training_data/raw_dataset.json"
+training_data_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "training_data", "raw_dataset.json")
 enhanced_processor = None
 
 try:
